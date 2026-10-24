@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Pet Arena</title>
+<link href="fonts/menu.css" rel="stylesheet">
+<style>
+:root{--bg:#072e25;--ink:#fff;--gold:#ffc83d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 0,#12624b,var(--bg) 70%);background-color:var(--bg);color:var(--ink);font-family:'Lilita One','Arial Black',system-ui,sans-serif}
+body{padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
+h1{margin:4px 0 2px;text-align:center;font-size:40px;font-weight:400;letter-spacing:1px;color:var(--gold);text-shadow:0 3px 0 #7a4a00,0 6px 14px rgba(0,0,0,.45)}
+p{margin:0 0 18px;text-align:center;opacity:.85;font-size:17px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px;margin:0 auto}
+a{position:relative;display:block;color:inherit;text-decoration:none;border-radius:22px;overflow:hidden;background:#0f5642;box-shadow:0 6px 0 rgba(0,0,0,.35),0 10px 20px rgba(0,0,0,.3);transition:transform .08s}
+a:active{transform:translateY(3px) scale(.98)}
+img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+span{display:block;padding:9px 6px 11px;text-align:center;font-size:19px}
+.now{position:absolute;top:8px;right:8px;padding:3px 9px;border-radius:999px;background:var(--gold);color:#3a2300;font-size:13px;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+</style></head><body>
+<h1>Pet Arena</h1>
+<p>Kies je arena</p>
+<div class="grid">
+  <a href="normaal.html" data-m=""><img src="img/normaal.webp" alt=""><span>Pet Arena</span></a>
+  <a href="halloween.html" data-m="9"><img src="img/halloween.webp" alt=""><span>Halloween</span></a>
+  <a href="thanksgiving.html" data-m="10"><img src="img/thanksgiving.webp" alt=""><span>Thanksgiving</span></a>
+  <a href="kerst.html" data-m="11"><img src="img/kerst.webp" alt=""><span>Kerst</span></a>
+</div>
+<script>
+// Mark the arena that fits the current month (okt = Halloween, nov = Thanksgiving, dec = Kerst).
+var m=String(new Date().getMonth()),t=document.querySelector('a[data-m="'+m+'"]')||document.querySelector('a[data-m=""]');
+var b=document.createElement('div');b.className='now';b.textContent='Nu!';t.appendChild(b);
+</script>
+</body></html>
