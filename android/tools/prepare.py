@@ -9,6 +9,8 @@ from PIL import Image, ImageDraw
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ANDROID = os.path.join(ROOT, "android")
 OUT = sys.argv[1]
+# "all" builds the menu app; a game name builds an app that opens only that game.
+VARIANT = sys.argv[2] if len(sys.argv) > 2 else "all"
 ASSETS = os.path.join(OUT, "assets")
 RES = os.path.join(OUT, "res")
 
@@ -19,7 +21,10 @@ GAMES = [
     ("thanksgiving", "Pet_Arena_Thanksgiving__1_.html", "Herfstige Kalkoen Pet Arena-logo.png"),
     ("kerst", "Pet_Arena_Kggrst_1__1_.html", "Sneeuwman in de Pet Arena.png"),
 ]
-APP_ICON = "Schattige Pet Arena-hondenmascotte.png"
+LABELS = {"all": "Pet Arena", "normaal": "Pet Arena", "halloween": "Pet Arena Halloween",
+          "thanksgiving": "Pet Arena Thanksgiving", "kerst": "Pet Arena Kerst"}
+ICON_BACKGROUNDS = {"all": "#1E6FE0", "normaal": "#1E6FE0", "halloween": "#1A0F12",
+                    "thanksgiving": "#F4A24C", "kerst": "#1B3566"}
 FONTS_RE = re.compile(r'<link href="(https://fonts\.googleapis\.com/css2\?[^"]+)" rel="stylesheet">')
 UA = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36"
 
@@ -52,20 +57,27 @@ def bundle_fonts(css_url, name):
 
 def write_assets():
     os.makedirs(os.path.join(ASSETS, "img"), exist_ok=True)
-    with open(os.path.join(ANDROID, "web", "index.html")) as f:
-        menu = f.read()
-    with open(os.path.join(ASSETS, "index.html"), "w") as f:
-        f.write(menu)
-    bundle_fonts("https://fonts.googleapis.com/css2?family=Lilita+One&display=swap", "menu")
+    if VARIANT == "all":
+        with open(os.path.join(ANDROID, "web", "index.html")) as f:
+            menu = f.read()
+        with open(os.path.join(ASSETS, "index.html"), "w") as f:
+            f.write(menu)
+        bundle_fonts("https://fonts.googleapis.com/css2?family=Lilita+One&display=swap", "menu")
 
     for name, html, logo in GAMES:
+        if VARIANT != "all" and name != VARIANT:
+            continue
         with open(os.path.join(ROOT, html), encoding="utf-8") as f:
             src = f.read()
         m = FONTS_RE.search(src)
         if m:
             src = src.replace(m.group(1), bundle_fonts(m.group(1), name))
-        with open(os.path.join(ASSETS, name + ".html"), "w", encoding="utf-8") as f:
+        # A single-game app has no menu: the game itself is the start page.
+        page = name + ".html" if VARIANT == "all" else "index.html"
+        with open(os.path.join(ASSETS, page), "w", encoding="utf-8") as f:
             f.write(src)
+        if VARIANT != "all":
+            continue
         Image.open(os.path.join(ROOT, logo)).convert("RGB").resize((512, 512), Image.LANCZOS).save(
             os.path.join(ASSETS, "img", name + ".webp"), quality=88)
 
@@ -87,7 +99,8 @@ def circle(img):
 
 
 def write_icons():
-    logo = Image.open(os.path.join(ROOT, APP_ICON)).convert("RGB")
+    icon = dict((n, l) for n, _, l in GAMES)["normaal" if VARIANT == "all" else VARIANT]
+    logo = Image.open(os.path.join(ROOT, icon)).convert("RGB")
     densities = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
     for d, k in densities.items():
         folder = os.path.join(RES, "mipmap-" + d)
@@ -125,6 +138,17 @@ def write_icons():
             f.write(xml)
 
 
+def write_values():
+    folder = os.path.join(RES, "values")
+    os.makedirs(folder, exist_ok=True)
+    with open(os.path.join(folder, "variant.xml"), "w") as f:
+        f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
+                '    <string name="app_name">%s</string>\n'
+                '    <color name="ic_launcher_background">%s</color>\n'
+                '</resources>\n' % (LABELS[VARIANT], ICON_BACKGROUNDS[VARIANT]))
+
+
 if __name__ == "__main__":
+    write_values()
     write_assets()
     write_icons()
